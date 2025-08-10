@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>All My Relatives</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+</head>
+
+<body>
+
+<div sec:authorize="isAuthenticated()"
+     th:replace="~{fragments/navbar :: navbar}">
+</div>
+
+<div class="container mt-4">
+    <h2 th:text="${relative.id == null} ? 'Добавить родственника' : 'Редактировать родственника'"></h2>
+    <form th:action="@{/relative/save}" th:object="${relative}" method="post">
+        <input type="hidden" th:field="*{id}" />
+        <div class="mb-3">
+            <label class="form-label">Имя</label>
+            <input type="text" class="form-control" th:field="*{firstName}" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Фамилия</label>
+            <input type="text" class="form-control" th:field="*{lastName}" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Дата рождения</label>
+            <input type="text" class="form-control" th:field="*{birthDate}" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Местоположение</label>
+            <input type="text" class="form-control" th:field="*{location}" />
+        </div>
+        <button type="submit" class="btn" style="background-color: #7C8B60; color: white;">Сохранить</button>
+        <a href="/relatives" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+</body>
+</html>

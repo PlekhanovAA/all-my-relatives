@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<body>
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true"
+     th:fragment="uploadModal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="background-color: #FAF6F0;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Загрузка фотографий</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <form th:action="@{/gallery/upload}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="file" name="images" class="form-control" multiple accept="image/*" required />
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-success">Загрузить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

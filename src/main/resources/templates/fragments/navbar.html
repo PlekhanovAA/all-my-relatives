@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="navbar" sec:authorize="isAuthenticated()">
+    <nav class="navbar navbar-expand-lg" style="background-color: #FAF6F0;">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}" style="color: #3B2F2F; font-weight: bold;">All My Relatives</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/relatives}" style="color: #3B2F2F;" th:text="#{nav.relatives}">Родственники</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/gallery}" style="color: #3B2F2F;" th:text="#{nav.gallery}">Фотоальбом</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/map}" style="color: #3B2F2F;" th:text="#{nav.map}">Карта</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/tree}" style="color: #3B2F2F;" th:text="#{nav.tree}">Древо</a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <!-- Переключатель языка -->
+                    <div class="dropdown me-2">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                                id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            🌐 <span th:text="${#locale.language.toUpperCase()}">RU</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+                            <li><a class="dropdown-item" th:href="@{/change-lang(lang='ru')}">RU</a></li>
+                            <li><a class="dropdown-item" th:href="@{/change-lang(lang='en')}">EN</a></li>
+                            <li><a class="dropdown-item" th:href="@{/change-lang(lang='kk')}">KK</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Кнопка выхода -->
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm" th:text="#{logout}">Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+</body>
+</html>
