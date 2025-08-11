@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
-public class GlobalModelAttributes {
+public class GlobalControllerAdvice {
 
     @ModelAttribute("currentPath")
-    public String getCurrentPath(HttpServletRequest request) {
+    public String currentPath(HttpServletRequest request) {
         return request.getRequestURI();
     }
 }
