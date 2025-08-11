@@ -6,17 +6,22 @@
     <div class="modal-dialog">
         <div class="modal-content" style="background-color: #FAF6F0;">
             <div class="modal-header">
-                <h5 class="modal-title" id="uploadModalLabel">Загрузка фотографий</h5>
+                <h5 class="modal-title" id="uploadModalLabel" th:text="#{gallery.modal.upload.title}">
+                    Загрузка фотографий
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <form th:action="@{/gallery/upload}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="file" name="images" class="form-control" multiple accept="image/*" required />
+                    <input type="file" name="images" class="form-control" multiple accept="image/*" required
+                           th:attr="placeholder=#{gallery.modal.upload.select}" />
                 </div>
                 <div class="modal-footer">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <button type="submit" class="btn btn-success">Загрузить</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" th:text="#{button.upload}">Загрузить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{button.cancel}">
+                        Отмена
+                    </button>
                 </div>
             </form>
         </div>

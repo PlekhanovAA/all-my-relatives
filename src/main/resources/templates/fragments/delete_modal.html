@@ -6,18 +6,24 @@
     <div class="modal-dialog">
         <form id="deleteForm" th:action="@{/gallery/delete}" method="post" class="modal-content">
             <div class="modal-header" style="background-color: #FAF6F0;">
-                <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+                <h5 class="modal-title" id="deleteModalLabel" th:text="#{gallery.modal.delete.title}">
+                    Подтверждение удаления
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
             </div>
             <div class="modal-body" style="background-color: #FAF6F0;">
-                <p>Вы действительно хотите удалить это фото?</p>
+                <p th:text="#{gallery.modal.delete.confirm}">Вы действительно хотите удалить это фото?</p>
                 <!-- ВАЖНО: id и name должны быть точно такими -->
                 <input type="hidden" id="modalFilename" name="filename">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             </div>
             <div class="modal-footer" style="background-color: #FAF6F0;">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-danger" onclick="confirmDelete(deleteTargetFilename)">Удалить</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{button.cancel}">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete(deleteTargetFilename)" th:text="#{button.delete}">
+                    Удалить
+                </button>
             </div>
         </form>
     </div>
