@@ -12,13 +12,13 @@ import java.util.Locale;
 public class LanguageController {
 
     @GetMapping("/change-lang")
-    public String changeLang(@RequestParam String lang,
-                             HttpServletRequest request) {
-        request.getSession().setAttribute(
-                SessionLocaleResolver.LOCALE_SESSION_ATTRIBUTE_NAME,
-                new Locale(lang)
-        );
+    public String changeLanguage(@RequestParam String lang, HttpServletRequest request) {
         String referer = request.getHeader("Referer");
+        if (referer != null && referer.contains("?")) {
+            referer += "&lang=" + lang;
+        } else if (referer != null) {
+            referer += "?lang=" + lang;
+        }
         return "redirect:" + (referer != null ? referer : "/");
     }
 }
