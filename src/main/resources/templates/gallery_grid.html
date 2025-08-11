@@ -17,15 +17,16 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Галерея</h2>
+        <h2 class="mb-0" th:text="#{gallery.grid.title}">Галерея</h2>
         <div>
-            <!-- Кнопка загрузки (открывает модалку) -->
-            <button class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <!-- Кнопка загрузки -->
+            <button class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#uploadModal"
+                    th:title="#{gallery.grid.upload}">
                 <i class="bi bi-upload"></i>
             </button>
 
             <!-- Кнопка назад -->
-            <a href="/gallery" class="btn btn-outline-secondary" title="Назад к просмотру">
+            <a href="/gallery" class="btn btn-outline-secondary" th:title="#{gallery.grid.back}">
                 <i class="bi bi-arrow-left"></i>
             </a>
         </div>
@@ -35,16 +36,16 @@
     <table class="table table-hover align-middle">
         <thead class="table-light">
         <tr>
-            <th>Фото</th>
-            <th>Имя файла</th>
-            <th class="text-end">Действия</th>
+            <th th:text="#{gallery.grid.photo}">Фото</th>
+            <th th:text="#{gallery.grid.filename}">Имя файла</th>
+            <th class="text-end" th:text="#{gallery.grid.actions}">Действия</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="photo : ${photos}">
             <td style="width: 72px;">
                 <img th:src="@{'/uploads/' + ${photo}}"
-                     alt="thumb"
+                     th:alt="#{gallery.grid.thumb}"
                      class="img-thumbnail"
                      style="width: 64px; height: 64px; object-fit: cover;">
             </td>
@@ -54,7 +55,7 @@
                         class="btn btn-sm text-danger border-0 bg-transparent"
                         th:attr="data-filename=${photo}"
                         onclick="confirmDeleteFromButton(this)"
-                        title="Удалить">
+                        th:title="#{gallery.grid.delete}">
                     <i class="bi bi-trash3-fill fs-5"></i>
                 </button>
             </td>
@@ -63,9 +64,10 @@
     </table>
 </div>
 
+<!-- Toast -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
     <div id="toastContainer" class="toast text-white bg-success" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-body">Фото удалено</div>
+        <div class="toast-body" th:text="#{gallery.grid.toastDeleted}">Фото удалено</div>
     </div>
 </div>
 

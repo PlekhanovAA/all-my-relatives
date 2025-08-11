@@ -16,36 +16,37 @@
 
     <div class="container text-center mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="mb-0">Фотоальбом</h2>
-            <a href="/gallery/grid" class="btn btn-outline-secondary" title="Настройки галереи">
+            <h2 class="mb-0" th:text="#{gallery.title}">Фотоальбом</h2>
+            <a href="/gallery/grid" class="btn btn-outline-secondary" th:title="#{gallery.settings}">
                 <i class="bi bi-gear-fill"></i>
             </a>
         </div>
+
         <!-- Область отображения центрального фото -->
         <div class="position-relative d-flex justify-content-center align-items-center" style="height: 400px;">
-            <button class="btn btn-outline-secondary position-absolute start-0" onclick="showPrevious()">
+            <button class="btn btn-outline-secondary position-absolute start-0" onclick="showPrevious()" th:title="#{gallery.previous}">
                 <i class="bi bi-chevron-left"></i>
             </button>
 
-            <img id="mainPhoto" src="" alt="Фото" class="img-fluid rounded shadow" style="max-height: 100%; max-width: 100%;" />
+            <img id="mainPhoto" src="" th:alt="#{gallery.photo}" class="img-fluid rounded shadow" style="max-height: 100%; max-width: 100%;" />
 
-            <button class="btn btn-outline-secondary position-absolute end-0" onclick="showNext()">
+            <button class="btn btn-outline-secondary position-absolute end-0" onclick="showNext()" th:title="#{gallery.next}">
                 <i class="bi bi-chevron-right"></i>
             </button>
         </div>
 
         <!-- Панель фильтров -->
         <div class="mt-4">
-            <h5>Фильтры (заглушка)</h5>
+            <h5 th:text="#{gallery.filters}">Фильтры (заглушка)</h5>
             <div class="row justify-content-center">
                 <div class="col-md-3">
-                    <input type="text" class="form-control" placeholder="Поиск по имени..." />
+                    <input type="text" class="form-control" th:placeholder="#{gallery.searchByName}" />
                 </div>
                 <div class="col-md-3">
                     <select class="form-select">
-                        <option>Все</option>
-                        <option>Связанные с родственником</option>
-                        <option>Без связей</option>
+                        <option th:text="#{gallery.all}">Все</option>
+                        <option th:text="#{gallery.linked}">Связанные с родственником</option>
+                        <option th:text="#{gallery.unlinked}">Без связей</option>
                     </select>
                 </div>
             </div>
