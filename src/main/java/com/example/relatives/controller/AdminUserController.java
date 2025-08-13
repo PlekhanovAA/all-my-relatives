@@ -6,8 +6,10 @@ import com.example.relatives.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.util.List;
@@ -49,4 +51,22 @@ public class AdminUserController {
         userRepository.save(user);
         return "redirect:/admin/users";
     }
+
+    @PostMapping("/delete")
+    @Transactional
+    public String deleteUser(@RequestParam("username") String username,
+                             Principal principal,
+                             RedirectAttributes redirectAttributes) {
+
+        // Запрещаем удалять самого себя
+        if (principal.getName().equals(username)) {
+            redirectAttributes.addFlashAttribute("error", "Нельзя удалить самого себя");
+            return "redirect:/admin/users";
+        }
+
+        userRepository.deleteByUsername(username);
+        redirectAttributes.addFlashAttribute("success", "Пользователь удалён");
+        return "redirect:/admin/users";
+    }
+
 }

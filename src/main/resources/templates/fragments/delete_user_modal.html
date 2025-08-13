@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true"
+     th:fragment="deleteUserModal">
+    <div class="modal-dialog">
+        <form id="deleteUserForm" th:action="@{/admin/users/delete}" method="post" class="modal-content">
+            <div class="modal-header" style="background-color: #FAF6F0;">
+                <h5 class="modal-title" id="deleteUserModalLabel" th:text="#{admin.users.delete.title}">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body" style="background-color: #FAF6F0;">
+                <p th:text="#{admin.users.delete.confirm}">Вы действительно хотите удалить этого пользователя?</p>
+                <input type="hidden" id="modalUsername" name="username">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            </div>
+            <div class="modal-footer" style="background-color: #FAF6F0;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{button.cancel}">Отмена</button>
+                <button type="submit" class="btn btn-danger" th:text="#{button.delete}">Удалить</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
