@@ -22,21 +22,27 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register", "/login", "/css/**").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/", "/login", "/register", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/gallery/**", "/map/**", "/tree/**").hasAnyRole("ADMIN", "VIEWER")
+                        .requestMatchers("/relatives/**", "/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/relatives", true)
-                        .permitAll())
+                        .permitAll()
+                )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .permitAll())
-                .build();
+                        .permitAll()
+                );
+
+        return http.build();
     }
 }

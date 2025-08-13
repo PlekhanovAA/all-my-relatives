@@ -1,15 +1,19 @@
 package com.example.relatives.controller;
 
+import com.example.relatives.model.Role;
 import com.example.relatives.model.User;
 import com.example.relatives.repository.UserRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @Controller
 public class AuthController {
@@ -42,6 +46,7 @@ public class AuthController {
 
         String rawPassword = user.getPassword();
         user.setPassword(encoder.encode(rawPassword));
+        user.setRole(Role.ADMIN); // 👈 Явно задаём роль
         userRepo.save(user);
 
         Authentication authentication = authManager.authenticate(
