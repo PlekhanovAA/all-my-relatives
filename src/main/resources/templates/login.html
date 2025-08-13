@@ -30,6 +30,14 @@
         <button type="submit" class="btn w-100" style="background-color: #D9825B; color: white;" th:text="#{login.button}">Войти</button>
     </form>
 
+    <div th:if="${param.error}" class="alert alert-danger mt-3">
+        <span th:text="#{login.error}">Неверное имя пользователя или пароль</span>
+    </div>
+
+    <div th:if="${param.logout}" class="alert alert-success mt-3">
+        <span th:text="#{login.logout}">Вы вышли из системы</span>
+    </div>
+
 </div>
 </body>
 </html>
