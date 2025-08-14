@@ -16,8 +16,8 @@ public class DataInitializer {
         return args -> {
             if (userRepository.count() == 0) {
                 User admin = new User();
-                admin.setUsername("admin");
-                admin.setPassword(passwordEncoder.encode("admin")); // 🔑 пароль по умолчанию
+                admin.setUsername("1");
+                admin.setPassword(passwordEncoder.encode("1")); // 🔑 пароль по умолчанию
                 admin.setRole(Role.ADMIN);
                 admin.setOwner(null); // админ — корневой пользователь
                 userRepository.save(admin);

@@ -17,9 +17,13 @@
     <div class="container text-center mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0" th:text="#{gallery.title}">Фотоальбом</h2>
-            <a href="/gallery/grid" class="btn btn-outline-secondary" th:title="#{gallery.settings}">
+            <a href="/gallery/grid"
+               class="btn btn-outline-secondary"
+               title="Настройки галереи"
+               sec:authorize="hasRole('ADMIN')">
                 <i class="bi bi-gear-fill"></i>
             </a>
+
         </div>
 
         <!-- Область отображения центрального фото -->

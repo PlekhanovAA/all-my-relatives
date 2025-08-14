@@ -2,6 +2,7 @@ package com.example.relatives.controller;
 
 import com.example.relatives.model.Relative;
 import com.example.relatives.service.RelativeService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,8 @@ public class RelativeController {
     }
 
     @GetMapping("/relative/add")
-    public String addForm(Model model) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public String addRelative(Model model) {
         model.addAttribute("relative", new Relative());
         return "relative_form";
     }
@@ -39,7 +41,8 @@ public class RelativeController {
     }
 
     @PostMapping("/relative/save")
-    public String save(@ModelAttribute Relative relative) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public String saveRelative(@ModelAttribute Relative relative) {
         service.save(relative);
         return "redirect:/relatives";
     }

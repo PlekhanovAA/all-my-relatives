@@ -20,7 +20,9 @@
     <a href="/relative/add"
        class="btn btn-success mb-3"
        style="background-color: #7C8B60;"
-       th:text="#{relatives.add}">Добавить</a>
+       sec:authorize="hasRole('ADMIN')">
+        <span th:text="#{button.add}">Добавить</span>
+    </a>
 
     <table class="table table-bordered">
         <thead class="table-light">
@@ -30,7 +32,7 @@
             <th th:text="#{relatives.lastname}">Фамилия</th>
             <th th:text="#{relatives.birthdate}">Дата рождения</th>
             <th th:text="#{relatives.location}">Местоположение</th>
-            <th th:text="#{relatives.actions}">Действия</th>
+            <th th:text="#{relatives.actions}" sec:authorize="hasRole('ADMIN')">Действия</th>
         </tr>
         </thead>
         <tbody>
@@ -40,7 +42,7 @@
             <td th:text="${r.lastName}"></td>
             <td th:text="${r.birthDate}"></td>
             <td th:text="${r.location}"></td>
-            <td>
+            <td sec:authorize="hasRole('ADMIN')">
                 <a class="btn btn-sm btn-outline-secondary"
                    th:href="@{'/relative/edit/' + ${r.id}}"
                    th:text="#{relatives.edit}">Редактировать</a>
