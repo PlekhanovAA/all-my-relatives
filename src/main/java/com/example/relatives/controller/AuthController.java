@@ -13,6 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 
 @Controller
@@ -46,9 +50,22 @@ public class AuthController {
 
         String rawPassword = user.getPassword();
         user.setPassword(encoder.encode(rawPassword));
-        user.setRole(Role.ADMIN); // 👈 Явно задаём роль
+        user.setRole(Role.ADMIN);
         userRepo.save(user);
 
+        // 📂 Создаём базовую структуру директорий
+        Path userBasePath = Paths.get("uploads", user.getUsername());
+        Path userGalleryPath = userBasePath.resolve("gallery");
+        Path userRelativesPath = userBasePath.resolve("relatives");
+
+        try {
+            Files.createDirectories(userGalleryPath);
+            Files.createDirectories(userRelativesPath);
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось создать структуру папок для пользователя: " + user.getUsername(), e);
+        }
+
+        // 🔑 Автоматический вход после регистрации
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), rawPassword)
         );

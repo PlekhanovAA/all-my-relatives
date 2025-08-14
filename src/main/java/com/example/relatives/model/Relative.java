@@ -12,6 +12,9 @@ public class Relative {
     private String lastName;
     private String birthDate;
     private String location;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     // Геттеры/Сеттеры
     public Long getId() { return id; }
@@ -28,4 +31,11 @@ public class Relative {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public User getOwner() {
+        return owner;
+    }
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
 }

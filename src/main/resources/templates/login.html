@@ -29,7 +29,9 @@
         </div>
         <button type="submit" class="btn w-100" style="background-color: #D9825B; color: white;" th:text="#{login.button}">Войти</button>
     </form>
-
+    <div class="text-center mt-3">
+        <a th:href="@{/register}" th:text="#{login.registerLink}">Регистрация</a>
+    </div>
     <div th:if="${param.error}" class="alert alert-danger mt-3">
         <span th:text="#{login.error}">Неверное имя пользователя или пароль</span>
     </div>
