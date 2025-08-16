@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link th:href="@{/css/style.css}" rel="stylesheet" />
 </head>
-<body>
+<body data-username="[[${#authentication.name}]]">
 
 
 <div sec:authorize="isAuthenticated()"
@@ -17,16 +17,16 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0" th:text="#{gallery.grid.title}">Галерея</h2>
+        <h2 class="mb-0" th:text="#{nav.gallery}">Галерея</h2>
         <div>
-            <!-- Кнопка загрузки -->
+            <!-- Кнопка загрузки (открывает модалку) -->
             <button class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#uploadModal"
-                    th:title="#{gallery.grid.upload}">
+                    sec:authorize="hasRole('ADMIN')">
                 <i class="bi bi-upload"></i>
             </button>
 
             <!-- Кнопка назад -->
-            <a href="/gallery" class="btn btn-outline-secondary" th:title="#{gallery.grid.back}">
+            <a href="/gallery" class="btn btn-outline-secondary" title="Назад к просмотру">
                 <i class="bi bi-arrow-left"></i>
             </a>
         </div>
@@ -37,14 +37,14 @@
         <thead class="table-light">
         <tr>
             <th th:text="#{gallery.grid.photo}">Фото</th>
-            <th th:text="#{gallery.grid.filename}">Имя файла</th>
-            <th class="text-end" th:text="#{gallery.grid.actions}">Действия</th>
+            <th th:text="#{gallery.filename}">Имя файла</th>
+            <th class="text-end" th:text="#{gallery.actions}">Действия</th>
         </tr>
         </thead>
-        <tbody th:if="${photos != null and photos.size() > 0}">
+        <tbody>
         <tr th:each="photo : ${photos}">
             <td style="width: 72px;">
-                <img th:src="@{'/uploads/' + ${photo}}"
+                <img th:src="@{'/uploads/' + ${#authentication.name} + '/gallery/' + ${photo}}"
                      alt="thumb"
                      class="img-thumbnail"
                      style="width: 64px; height: 64px; object-fit: cover;">
@@ -55,19 +55,42 @@
                         class="btn btn-sm text-danger border-0 bg-transparent"
                         th:attr="data-filename=${photo}"
                         onclick="confirmDeleteFromButton(this)"
-                        th:title="#{button.delete}">
+                        title="#{button.delete}"
+                        sec:authorize="hasRole('ADMIN')">
                     <i class="bi bi-trash3-fill fs-5"></i>
                 </button>
             </td>
         </tr>
         </tbody>
-        <tbody th:if="${photos == null or photos.size() == 0}">
-        <tr>
-            <td colspan="3" class="text-center text-muted" th:text="#{gallery.no_photos}">Нет фотографий</td>
-        </tr>
-        </tbody>
     </table>
+
+    <!-- Панель фильтров -->
+    <div class="mt-4">
+        <h5 th:text="#{filters.title}">Фильтры</h5>
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <input type="text" class="form-control"
+                       th:placeholder="#{gallery.searchPlaceholder}" />
+            </div>
+            <div class="col-md-3">
+                <select class="form-select">
+                    <option th:text="#{gallery.filter.all}">Все</option>
+                    <option th:text="#{gallery.filter.withRelative}">Связанные с родственником</option>
+                    <option th:text="#{gallery.filter.withoutRelative}">Без связей</option>
+                </select>
+            </div>
+        </div>
+    </div>
 </div>
+
+
+<!--<script th:inline="javascript">-->
+<!--    const username = /*[[${#authentication.name}]]*/ '';-->
+<!--    function getPhotoUrl(filename) {-->
+<!--        return `/uploads/${username}/${filename}`;-->
+<!--    }-->
+<!--</script>-->
+
 
 <!-- Toast -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">

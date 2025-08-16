@@ -21,7 +21,10 @@ function confirmDelete(filename) {
 function sendDeleteRequest(filename) {
     const tokenElement = document.querySelector("#deleteForm input[name='_csrf']");
     const csrfToken = tokenElement?.value;
-    const url = "/gallery/delete";
+
+    // ⚡️ Теперь удаление учитывает владельца, который приходит с backend (через Thymeleaf)
+    const username = document.body.getAttribute("data-username");
+    const url = `/gallery/delete/${encodeURIComponent(username)}`;
 
     fetch(url, {
         method: "POST",
@@ -33,7 +36,6 @@ function sendDeleteRequest(filename) {
     })
         .then(res => {
             if (!res.ok) throw new Error("Ошибка удаления");
-            // Удалим строку из таблицы
             if (deleteTargetRow) {
                 deleteTargetRow.remove();
             }

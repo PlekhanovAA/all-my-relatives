@@ -53,16 +53,12 @@ public class AuthController {
         user.setRole(Role.ADMIN);
         userRepo.save(user);
 
-        // 📂 Создаём базовую структуру директорий
-        Path userBasePath = Paths.get("uploads", user.getUsername());
-        Path userGalleryPath = userBasePath.resolve("gallery");
-        Path userRelativesPath = userBasePath.resolve("relatives");
-
+        // 📂 Создаём папку /uploads/{username}
+        Path userDir = Paths.get("uploads", user.getUsername());
         try {
-            Files.createDirectories(userGalleryPath);
-            Files.createDirectories(userRelativesPath);
+            Files.createDirectories(userDir);
         } catch (IOException e) {
-            throw new RuntimeException("Не удалось создать структуру папок для пользователя: " + user.getUsername(), e);
+            throw new RuntimeException("Не удалось создать папку для пользователя: " + user.getUsername(), e);
         }
 
         // 🔑 Автоматический вход после регистрации
@@ -73,6 +69,7 @@ public class AuthController {
 
         return "redirect:/gallery";
     }
+
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
