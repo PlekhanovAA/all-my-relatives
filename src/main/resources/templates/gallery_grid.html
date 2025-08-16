@@ -64,23 +64,14 @@
         </tbody>
     </table>
 
-    <!-- Панель фильтров -->
-    <div class="mt-4">
-        <h5 th:text="#{filters.title}">Фильтры</h5>
-        <div class="row justify-content-center">
-            <div class="col-md-3">
-                <input type="text" class="form-control"
-                       th:placeholder="#{gallery.searchPlaceholder}" />
-            </div>
-            <div class="col-md-3">
-                <select class="form-select">
-                    <option th:text="#{gallery.filter.all}">Все</option>
-                    <option th:text="#{gallery.filter.withRelative}">Связанные с родственником</option>
-                    <option th:text="#{gallery.filter.withoutRelative}">Без связей</option>
-                </select>
-            </div>
-        </div>
-    </div>
+    <!-- 🟢 Заглушка -->
+    <p id="noPhotosMessage" class="text-muted text-center mt-3"
+       th:if="${photos.size() == 0}"
+       th:text="#{gallery.noPhotos}">
+        Фотографии пока не загружены.
+    </p>
+
+
 </div>
 
 

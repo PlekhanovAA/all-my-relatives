@@ -16,22 +16,20 @@
 
 <div class="container text-center mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0" th:text="#{nav.gallery}">Фотоальбом</h2>
-        <a href="/gallery/grid" class="btn btn-outline-secondary"
-           title="#{gallery.settings}"
-           sec:authorize="hasRole('ADMIN')">
+        <h2 class="mb-0" th:text="#{gallery.title}">Фотоальбом</h2>
+        <a href="/gallery/grid" class="btn btn-outline-secondary" title="Настройки галереи"
+           th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
             <i class="bi bi-gear-fill"></i>
         </a>
     </div>
 
-    <!-- Область отображения центрального фото -->
-    <div class="position-relative d-flex justify-content-center align-items-center" style="height: 400px;">
+    <!-- Если фото есть -->
+    <div th:if="${photos.size() > 0}" class="position-relative d-flex justify-content-center align-items-center" style="height: 400px;">
         <button class="btn btn-outline-secondary position-absolute start-0" onclick="showPrevious()">
             <i class="bi bi-chevron-left"></i>
         </button>
 
-        <img id="mainPhoto" src="" alt="Фото"
-             class="img-fluid rounded shadow"
+        <img id="mainPhoto" src="" alt="Фото" class="img-fluid rounded shadow"
              style="max-height: 100%; max-width: 100%;" />
 
         <button class="btn btn-outline-secondary position-absolute end-0" onclick="showNext()">
@@ -39,13 +37,19 @@
         </button>
     </div>
 
-    <!-- Панель фильтров -->
-    <div class="mt-4">
+    <!-- Если фото нет -->
+    <p th:if="${photos.size() == 0}"
+       class="text-muted text-center mt-4"
+       th:text="#{gallery.noPhotos}">
+        Фотографии пока не загружены.
+    </p>
+
+    <!-- Панель фильтров — показывать только если фото есть -->
+    <div class="mt-4" th:if="${photos.size() > 0}">
         <h5 th:text="#{filters.title}">Фильтры</h5>
         <div class="row justify-content-center">
             <div class="col-md-3">
-                <input type="text" class="form-control"
-                       th:placeholder="#{gallery.searchPlaceholder}" />
+                <input type="text" class="form-control" th:placeholder="#{gallery.searchPlaceholder}" />
             </div>
             <div class="col-md-3">
                 <select class="form-select">
