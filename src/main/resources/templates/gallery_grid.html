@@ -44,10 +44,11 @@
         <tbody>
         <tr th:each="photo : ${photos}">
             <td style="width: 72px;">
-                <img th:src="@{'/uploads/' + ${#authentication.name} + '/gallery/' + ${photo}}"
+                <img th:src="@{'/uploads/' + ${galleryOwner} + '/gallery/' + ${photo}}"
                      alt="thumb"
                      class="img-thumbnail"
                      style="width: 64px; height: 64px; object-fit: cover;">
+
             </td>
             <td th:text="${photo}"></td>
             <td class="text-end">

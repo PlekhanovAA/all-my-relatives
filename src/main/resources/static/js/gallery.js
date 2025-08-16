@@ -1,11 +1,11 @@
 // gallery.js
 
-// username и список файлов будут подставлены Thymeleaf'ом в window.galleryData
-const username = window.galleryData?.username || '';
+// galleryOwner и список файлов подставляются Thymeleaf'ом в window.galleryData
+const galleryOwner = window.galleryData?.galleryOwner || '';
 const photoList = window.galleryData?.photos || [];
 
-// Полные ссылки на изображения
-const photoUrls = photoList.map(p => `/uploads/${username}/gallery/${p}`);
+// Полные ссылки на изображения строим через galleryOwner
+const photoUrls = photoList.map(p => `/uploads/${galleryOwner}/gallery/${p}`);
 
 let currentIndex = 0;
 const mainPhoto = document.getElementById("mainPhoto");
@@ -15,7 +15,7 @@ function showPhoto(index) {
     if (photoUrls.length === 0) {
         if (mainPhoto) {
             mainPhoto.src = "";
-            mainPhoto.alt = "Нет фотографий";
+            mainPhoto.alt = window.galleryData?.noPhotosMsg || "Нет фотографий";
         }
         return;
     }

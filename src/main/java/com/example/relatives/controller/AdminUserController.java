@@ -44,11 +44,14 @@ public class AdminUserController {
     @PostMapping("/invite")
     public String inviteUser(@ModelAttribute User user, Principal principal) {
         User owner = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
+                .orElseThrow(() -> new RuntimeException("Владелец не найден"));
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(Role.VIEWER); // 👈 здесь всегда VIEWER
+        user.setRole(Role.VIEWER);
         user.setOwner(owner);
+
         userRepository.save(user);
+
         return "redirect:/admin/users";
     }
 

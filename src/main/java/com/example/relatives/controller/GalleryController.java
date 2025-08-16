@@ -1,5 +1,8 @@
 package com.example.relatives.controller;
 
+import com.example.relatives.model.Role;
+import com.example.relatives.model.User;
+import com.example.relatives.repository.UserRepository;
 import org.springframework.core.io.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -16,72 +19,107 @@ import java.util.*;
 @Controller
 public class GalleryController {
 
-    private Path getUserGalleryDir() throws IOException {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        Path userGalleryPath = Paths.get("uploads", username, "gallery");
+    private final UserRepository userRepository;
 
-        if (!Files.exists(userGalleryPath)) {
-            Files.createDirectories(userGalleryPath);
-        }
-        return userGalleryPath;
+    public GalleryController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    private Path getGalleryPath(User user) {
+        return Paths.get("uploads", user.getUsername(), "gallery");
+    }
+
+    private User resolveTargetUser(User current) {
+        return current.getRole() == Role.VIEWER ? current.getOwner() : current;
     }
 
     @GetMapping("/gallery")
-    public String gallery(Model model) throws IOException {
-        Path userGalleryPath = getUserGalleryDir();
+    public String gallery(Model model, Principal principal) throws IOException {
+        User current = userRepository.findByUsername(principal.getName()).orElseThrow();
+        User target  = current.getRole() == Role.VIEWER ? current.getOwner() : current;
 
+        Path userGalleryPath = Paths.get("uploads", target.getUsername(), "gallery");
+        if (!Files.exists(userGalleryPath)) {
+            Files.createDirectories(userGalleryPath);
+        }
         List<String> filenames = Files.list(userGalleryPath)
                 .map(Path::getFileName)
                 .map(Path::toString)
                 .toList();
 
         model.addAttribute("photos", filenames);
+        model.addAttribute("galleryOwner", target.getUsername()); // ⬅️ ВАЖНО
         return "gallery";
     }
 
+    @GetMapping("/gallery/grid")
+    public String galleryGrid(Model model, Principal principal) throws IOException {
+        User current = userRepository.findByUsername(principal.getName()).orElseThrow();
+        User target  = current.getRole() == Role.VIEWER ? current.getOwner() : current;
+
+        Path userGalleryPath = Paths.get("uploads", target.getUsername(), "gallery");
+        if (!Files.exists(userGalleryPath)) {
+            Files.createDirectories(userGalleryPath);
+        }
+        List<String> filenames = Files.list(userGalleryPath)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .toList();
+
+        model.addAttribute("photos", filenames);
+        model.addAttribute("galleryOwner", target.getUsername()); // ⬅️ ВАЖНО
+        return "gallery_grid";
+    }
+
+
+    // --- Загрузка файлов (только ADMIN) ---
     @PostMapping("/gallery/upload")
-    public String handleUpload(@RequestParam("images") List<MultipartFile> files) throws IOException {
-        Path userGalleryPath = getUserGalleryDir();
+    public String handleUpload(@RequestParam("images") List<MultipartFile> files,
+                               Principal principal) throws IOException {
+        User current = userRepository.findByUsername(principal.getName()).orElseThrow();
+
+        if (current.getRole() != Role.ADMIN) {
+            throw new SecurityException("Только администратор может загружать фото");
+        }
+
+        Path userGalleryPath = getGalleryPath(current);
+        if (!Files.exists(userGalleryPath)) {
+            Files.createDirectories(userGalleryPath);
+        }
 
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
-                String filename = StringUtils.cleanPath(
-                        Objects.requireNonNull(file.getOriginalFilename())
-                );
+                String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
                 Path targetPath = userGalleryPath.resolve(filename);
                 file.transferTo(targetPath);
             }
         }
-        return "redirect:/gallery";
+        return "redirect:/gallery/grid";
     }
 
+    // --- Удаление фото (только ADMIN) ---
+    @PostMapping("/gallery/delete")
+    public String deleteImage(@RequestParam("filename") String filename,
+                              Principal principal) throws IOException {
+        User current = userRepository.findByUsername(principal.getName()).orElseThrow();
+
+        if (current.getRole() != Role.ADMIN) {
+            throw new SecurityException("Только администратор может удалять фото");
+        }
+
+        Path filePath = getGalleryPath(current).resolve(filename);
+        Files.deleteIfExists(filePath);
+
+        return "redirect:/gallery/grid";
+    }
+
+    // --- Отдача файлов ---
     @GetMapping("/uploads/{username}/gallery/{filename:.+}")
     @ResponseBody
     public Resource serveImage(@PathVariable String username,
                                @PathVariable String filename) throws IOException {
         Path file = Paths.get("uploads", username, "gallery").resolve(filename);
         return new UrlResource(file.toUri());
-    }
-
-    @PostMapping("/gallery/delete")
-    public String deleteImage(@RequestParam("filename") String filename) throws IOException {
-        Path userGalleryPath = getUserGalleryDir();
-        Path filePath = userGalleryPath.resolve(filename);
-        Files.deleteIfExists(filePath);
-        return "redirect:/gallery";
-    }
-
-    @GetMapping("/gallery/grid")
-    public String galleryGrid(Model model) throws IOException {
-        Path userGalleryPath = getUserGalleryDir();
-
-        List<String> filenames = Files.list(userGalleryPath)
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .toList();
-
-        model.addAttribute("photos", filenames);
-        return "gallery_grid";
     }
 }
 
