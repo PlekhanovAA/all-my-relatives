@@ -39,5 +39,11 @@
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version> <!-- бери актуальную -->
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

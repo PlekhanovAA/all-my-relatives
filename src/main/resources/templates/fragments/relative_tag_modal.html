@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<body>
+<div class="modal fade" id="tagModal" tabindex="-1" aria-hidden="true"
+     th:fragment="tagModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:text="#{gallery.tag.selectRelative}">Выберите родственника</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <select id="relativeSelect" class="form-select">
+                    <option th:each="r : ${relatives}" th:value="${r.id}" th:text="${r.firstName + ' ' + r.lastName}"></option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal" th:text="#{button.cancel}">Отмена</button>
+                <button class="btn btn-success" onclick="saveTag()" th:text="#{button.save}">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

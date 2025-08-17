@@ -1,10 +1,14 @@
 package com.example.relatives.controller;
 
+import com.example.relatives.model.Relative;
 import com.example.relatives.model.Role;
 import com.example.relatives.model.User;
+import com.example.relatives.repository.RelativeRepository;
 import com.example.relatives.repository.UserRepository;
 import org.springframework.core.io.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -20,9 +24,11 @@ import java.util.*;
 public class GalleryController {
 
     private final UserRepository userRepository;
+    private final RelativeRepository relativeRepository;
 
-    public GalleryController(UserRepository userRepository) {
+    public GalleryController(UserRepository userRepository, RelativeRepository relativeRepository) {
         this.userRepository = userRepository;
+        this.relativeRepository = relativeRepository;
     }
 
     private Path getGalleryPath(User user) {
@@ -34,23 +40,34 @@ public class GalleryController {
     }
 
     @GetMapping("/gallery")
-    public String gallery(Model model, Principal principal) throws IOException {
-        User current = userRepository.findByUsername(principal.getName()).orElseThrow();
-        User target  = current.getRole() == Role.VIEWER ? current.getOwner() : current;
+    public String gallery(Model model, @AuthenticationPrincipal UserDetails ud) throws IOException {
+        User me = userRepository.findByUsername(ud.getUsername()).orElseThrow();
+        User galleryOwner = me.getOwner() != null ? me.getOwner() : me;
 
-        Path userGalleryPath = Paths.get("uploads", target.getUsername(), "gallery");
+        Path userGalleryPath = Paths.get("uploads", galleryOwner.getUsername(), "gallery");
         if (!Files.exists(userGalleryPath)) {
             Files.createDirectories(userGalleryPath);
         }
+
         List<String> filenames = Files.list(userGalleryPath)
-                .map(Path::getFileName)
-                .map(Path::toString)
+                .filter(Files::isRegularFile)
+                .map(p -> p.getFileName().toString())
+                .sorted()
                 .toList();
 
         model.addAttribute("photos", filenames);
-        model.addAttribute("galleryOwner", target.getUsername()); // ⬅️ ВАЖНО
+        model.addAttribute("galleryOwner", galleryOwner.getUsername());
+
+        // админ? тогда подгрузим его родственников для модалки
+        boolean isAdmin = me.getOwner() == null; // см. нашу логику: у админа owner == null
+        if (isAdmin) {
+            List<Relative> rels = relativeRepository.findByOwner(me);
+            model.addAttribute("relatives", rels);
+        }
+
         return "gallery";
     }
+
 
     @GetMapping("/gallery/grid")
     public String galleryGrid(Model model, Principal principal) throws IOException {
