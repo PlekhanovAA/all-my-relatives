@@ -1,32 +1,62 @@
-// gallery_tags.js
-
-let startX, startY, selectionBox = null;
-let tagLayer = null;
-
+let editMode = false; // 🔥 по умолчанию режим просмотра
+let selectionBox = null;
+let startX, startY;
 const photoCanvas = document.getElementById("photoCanvas");
 
-// режим редактирования
-let editMode = false;
+// 📌 показать модалку после выделения
+function openTagModal(filename, rect) {
+    // сохраняем текущий filename, чтобы потом использовать
+    window.currentFilename = filename;
 
-// кнопка переключения
-const toggleEditBtn = document.getElementById("toggleEditBtn");
-if (toggleEditBtn) {
-    toggleEditBtn.addEventListener("click", () => {
-        editMode = !editMode;
+    // сохраняем координаты выделенной области (относительно контейнера)
+    window.currentRect = rect;
 
-        const span = toggleEditBtn.querySelector("span");
-        if (editMode) {
-            span.textContent = window.i18n?.galleryEditOn || "Режим редактирования: вкл";
-            toggleEditBtn.classList.add("active");
-        } else {
-            span.textContent = window.i18n?.galleryEditOff || "Режим редактирования: выкл";
-            toggleEditBtn.classList.remove("active");
-        }
-    });
+    const modal = new bootstrap.Modal(document.getElementById("relativeTagModal"));
+    modal.show();
 }
 
-// Событие мыши для выделения (только если включён editMode)
-if (photoCanvas) {
+// 📌 сохранить метку
+function saveTag() {
+    const relativeSelect = document.getElementById("relativeSelect");
+    if (!relativeSelect) {
+        console.error("⚠️ Не найден select с родственниками!");
+        return;
+    }
+
+    const relativeId = relativeSelect.value;
+    const filename = window.currentFilename;
+    const rect = window.currentRect;
+
+    const tagDto = {
+        relativeId,
+        filename,
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height
+    };
+
+    const token = document.querySelector("meta[name='_csrf']").content;
+    const header = document.querySelector("meta[name='_csrf_header']").content;
+
+    fetch("/gallery/tags/save", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            [header]: token
+        },
+        body: JSON.stringify(tagDto)
+    })
+        .then(res => res.json())
+        .then(tag => {
+            renderTag(tag);
+            bootstrap.Modal.getInstance(document.getElementById("relativeTagModal")).hide();
+        })
+        .catch(err => console.error("Ошибка сохранения метки:", err));
+}
+
+// 📌 выделение области (если админ и editMode включён)
+if (document.body.getAttribute("data-is-admin") === "true" && photoCanvas) {
     photoCanvas.addEventListener("mousedown", (e) => {
         const mainPhoto = document.getElementById("mainPhoto");
         if (!editMode || e.target !== mainPhoto) return;
@@ -39,8 +69,6 @@ if (photoCanvas) {
         selectionBox.classList.add("tag-box");
         selectionBox.style.left = `${startX}px`;
         selectionBox.style.top = `${startY}px`;
-        selectionBox.style.width = "0px";
-        selectionBox.style.height = "0px";
         photoCanvas.appendChild(selectionBox);
 
         function onMouseMove(ev) {
@@ -54,7 +82,16 @@ if (photoCanvas) {
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
 
-            console.log("📌 Выделена область:", selectionBox.getBoundingClientRect());
+            const boxRect = selectionBox.getBoundingClientRect();
+            const canvasRect = photoCanvas.getBoundingClientRect();
+            const filename = window.galleryData.photos[window.currentIndex];
+
+            openTagModal(filename, {
+                left: boxRect.left - canvasRect.left,
+                top: boxRect.top - canvasRect.top,
+                width: boxRect.width,
+                height: boxRect.height
+            });
         }
 
         document.addEventListener("mousemove", onMouseMove);
@@ -62,34 +99,22 @@ if (photoCanvas) {
     });
 }
 
-// загрузка тегов
-function loadTags(filename) {
-    if (!filename) return;
+// 📌 переключатель режима редактирования
+document.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("toggleEditMode");
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+            editMode = !editMode;
+            toggleBtn.classList.toggle("btn-danger", editMode);
+            toggleBtn.classList.toggle("btn-warning", !editMode);
+            toggleBtn.innerHTML = editMode
+                ? "✅ Режим редактирования"
+                : "✏️ Режим редактирования";
+        });
+    }
+});
 
-    if (tagLayer) tagLayer.remove();
-    tagLayer = document.createElement("div");
-    tagLayer.style.position = "absolute";
-    tagLayer.style.top = "0";
-    tagLayer.style.left = "0";
-    tagLayer.style.width = "100%";
-    tagLayer.style.height = "100%";
-    tagLayer.style.pointerEvents = "none";
-    tagLayer.id = "tagLayer";
-
-    photoCanvas.appendChild(tagLayer);
-
-    const galleryOwner = window.galleryData?.galleryOwner || '';
-
-    fetch(`/gallery/tags/${filename}?ownerName=${encodeURIComponent(galleryOwner)}`)
-        .then(res => res.json())
-        .then(tags => {
-            if (Array.isArray(tags)) {
-                tags.forEach(tag => renderTag(tag));
-            }
-        })
-        .catch(err => console.error("Ошибка загрузки тегов:", err));
-}
-
+// 📌 отрисовка метки (для уже сохранённых)
 function renderTag(tag) {
     const box = document.createElement("div");
     box.classList.add("tag-box");
@@ -98,7 +123,6 @@ function renderTag(tag) {
     box.style.width = tag.width + "px";
     box.style.height = tag.height + "px";
     box.title = tag.relativeName;
-    tagLayer.appendChild(box);
-}
 
-window.loadTags = loadTags;
+    document.getElementById("photoCanvas").appendChild(box);
+}

@@ -40,33 +40,31 @@ public class GalleryController {
     }
 
     @GetMapping("/gallery")
-    public String gallery(Model model, @AuthenticationPrincipal UserDetails ud) throws IOException {
-        User me = userRepository.findByUsername(ud.getUsername()).orElseThrow();
-        User galleryOwner = me.getOwner() != null ? me.getOwner() : me;
+    public String gallery(Model model,
+                          @AuthenticationPrincipal UserDetails userDetails) throws IOException {
+        User owner = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow();
 
-        Path userGalleryPath = Paths.get("uploads", galleryOwner.getUsername(), "gallery");
+        // фото
+        Path userGalleryPath = Paths.get("uploads", owner.getId().toString(), "gallery");
         if (!Files.exists(userGalleryPath)) {
             Files.createDirectories(userGalleryPath);
         }
-
         List<String> filenames = Files.list(userGalleryPath)
-                .filter(Files::isRegularFile)
-                .map(p -> p.getFileName().toString())
-                .sorted()
+                .map(Path::getFileName)
+                .map(Path::toString)
                 .toList();
 
-        model.addAttribute("photos", filenames);
-        model.addAttribute("galleryOwner", galleryOwner.getUsername());
+        // родственники владельца
+        List<Relative> relatives = relativeRepository.findByOwner(owner);
 
-        // админ? тогда подгрузим его родственников для модалки
-        boolean isAdmin = me.getOwner() == null; // см. нашу логику: у админа owner == null
-        if (isAdmin) {
-            List<Relative> rels = relativeRepository.findByOwner(me);
-            model.addAttribute("relatives", rels);
-        }
+        model.addAttribute("photos", filenames);
+        model.addAttribute("galleryOwner", owner.getId()); // 👈 остаётся
+        model.addAttribute("relatives", relatives);        // 👈 для модалки
 
         return "gallery";
     }
+
 
 
     @GetMapping("/gallery/grid")

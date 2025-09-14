@@ -7,25 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
 
-    <style>
-        #photoCanvas {
-            position: relative;
-            display: inline-block;
-        }
-        .tag-box {
-            position: absolute;
-            border: 2px solid red;
-            background: rgba(255, 0, 0, 0.2);
-            cursor: pointer;
-        }
-        /* Стиль для кнопки редактирования */
-        #toggleEditBtn.active {
-            background-color: #D9825B;
-            color: white;
-            border-color: #D9825B;
-        }
-    </style>
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
+
 <body th:data-username="${#authentication.name}"
       th:data-is-admin="${#authorization.expression('hasRole(''ADMIN'')')}">
 
@@ -36,12 +21,11 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0" th:text="#{gallery.title}">Фотоальбом</h2>
         <div>
-            <!-- Кнопка редактирования только для ADMIN -->
-            <button id="toggleEditBtn"
-                    class="btn btn-outline-primary me-2"
-                    th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
-                    type="button">
-                ✏️ <span th:text="#{gallery.editMode.off}">Режим редактирования: выкл</span>
+            <!-- Кнопка только для ADMIN -->
+            <button th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                    id="toggleEditMode"
+                    class="btn btn-warning">
+                ✏️ <span th:text="#{gallery.editMode}">Режим редактирования</span>
             </button>
 
             <!-- Кнопка настроек -->

@@ -21,28 +21,24 @@ function showPhoto(index) {
   if (!mainPhoto) return;
 
   if (photoUrls.length === 0) {
-    // Пустая галерея
     mainPhoto.src = '';
     mainPhoto.alt = noPhotosMsg;
-    removeAllTags(); // чтобы не оставались рамки от предыдущих фото
+    removeAllTags();
     return;
   }
 
   currentIndex = (index + photoUrls.length) % photoUrls.length;
 
   const url = photoUrls[currentIndex];
-  const filename = photoList[currentIndex];
+  const filename = photoList[currentIndex];  // ✅ объявляем заранее
 
-  // Перед сменой изображения — очистим старые теги
   removeAllTags();
 
-  // Поменяем фото
   mainPhoto.src = url;
   mainPhoto.alt = filename;
 
-  // Подгрузка тегов только если есть функция (скрипт подключён) — т.е. для ADMIN
   if (typeof window.loadTags === 'function') {
-    window.loadTags(filename);
+    window.loadTags(filename);  // ✅ теперь filename точно доступен
   }
 }
 
