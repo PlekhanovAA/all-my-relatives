@@ -1,7 +1,6 @@
 package com.example.relatives.model;
 
 import jakarta.persistence.*;
-
 import lombok.*;
 
 @Entity
@@ -9,21 +8,15 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PhotoTag {
+public class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "photo_id")
-    private Photo photo;
+    private String filename;      // имя файла в папке
+    private String originalName;  // оригинальное имя при загрузке
 
     @ManyToOne
-    @JoinColumn(name = "relative_id")
-    private Relative relative;
-
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    @JoinColumn(name = "owner_id")
+    private User owner;
 }

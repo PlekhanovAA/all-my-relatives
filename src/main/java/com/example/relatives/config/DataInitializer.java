@@ -21,7 +21,7 @@ public class DataInitializer {
                 admin.setRole(Role.ADMIN);
                 admin.setOwner(null); // админ — корневой пользователь
                 userRepository.save(admin);
-                System.out.println("✅ Создан администратор: admin / admin");
+                System.out.println("✅ Создан администратор: 1 / 1");
             }
         };
     }

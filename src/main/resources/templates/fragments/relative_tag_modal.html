@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <body>
+<!-- 📌 Фрагмент модалки для выбора родственника -->
 <div th:fragment="tagModal" class="modal fade" id="relativeTagModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -12,13 +13,18 @@
                 <select id="relativeSelect" class="form-select">
                     <option th:each="rel : ${relatives}"
                             th:value="${rel.id}"
-                            th:text="${rel.firstName} + ' ' + ${rel.lastName}"></option>
+                            th:text="${rel.firstName} + ' ' + ${rel.lastName}">
+                    </option>
                 </select>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
                         th:text="#{button.cancel}">Отмена</button>
-                <button type="button" class="btn btn-primary" onclick="saveTag()"
+                <button type="button"
+                        class="btn btn-primary"
+                        onclick="saveTag()"
                         th:text="#{button.save}">Сохранить</button>
             </div>
         </div>

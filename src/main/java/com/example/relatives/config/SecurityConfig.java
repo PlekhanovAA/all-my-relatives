@@ -20,6 +20,7 @@ public class SecurityConfig {
                         // Админские страницы
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // Общедоступные страницы
+                        .requestMatchers("/gallery/tags/**").hasAnyRole("ADMIN", "VIEWER")
                         .requestMatchers("/", "/login", "/register", "/change-lang", "/error").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                         // Остальные страницы требуют авторизации

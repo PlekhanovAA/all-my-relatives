@@ -1,58 +1,54 @@
 // gallery.js
 
-// galleryOwner и список файлов подставляются Thymeleaf'ом в window.galleryData
-const galleryOwner = window.galleryData?.galleryOwner || '';
 const photoList = Array.isArray(window.galleryData?.photos) ? window.galleryData.photos : [];
-const noPhotosMsg = window.galleryData?.noPhotosMsg || 'Нет фотографий';
-
-// Полные ссылки на изображения строим через galleryOwner
-const photoUrls = photoList.map(p => `/uploads/${encodeURIComponent(galleryOwner)}/gallery/${encodeURIComponent(p)}`);
+const photoUrls = photoList.map(p => ({
+  id: p.id,
+  url: `/uploads/${encodeURIComponent(window.galleryData.galleryOwner)}/gallery/${encodeURIComponent(p.filename)}`
+}));
 
 let currentIndex = 0;
 const mainPhoto = document.getElementById('mainPhoto');
 
-// Вспомогательно: убрать все рамки-теги (на случай смены фото или пустой галереи)
 function removeAllTags() {
   document.querySelectorAll('.tag-box').forEach(el => el.remove());
+  const list = document.getElementById("relativesList");
+  if (list) list.innerHTML = "";
 }
 
-// Отобразить фото по индексу
 function showPhoto(index) {
   if (!mainPhoto) return;
 
-  if (photoUrls.length === 0) {
+  if (photoList.length === 0) {
     mainPhoto.src = '';
-    mainPhoto.alt = noPhotosMsg;
+    mainPhoto.alt = window.galleryData?.noPhotosMsg || 'Нет фотографий';
     removeAllTags();
     return;
   }
 
-  currentIndex = (index + photoUrls.length) % photoUrls.length;
+  currentIndex = (index + photoList.length) % photoList.length;
 
-  const url = photoUrls[currentIndex];
-  const filename = photoList[currentIndex];  // ✅ объявляем заранее
-
-  removeAllTags();
+  const photo = photoList[currentIndex];
+  const url = `/uploads/${encodeURIComponent(window.galleryData.galleryOwner)}/gallery/${encodeURIComponent(photo.filename)}`;
 
   mainPhoto.src = url;
-  mainPhoto.alt = filename;
+  mainPhoto.alt = photo.filename;
+
+  window.currentPhotoId = photo.id; // 👈 теперь сохраняем id
 
   if (typeof window.loadTags === 'function') {
-    window.loadTags(filename);  // ✅ теперь filename точно доступен
+    window.loadTags(photo.id); // 👈 грузим теги по id
   }
 }
 
-// Следующее фото
 function showNext() {
   showPhoto(currentIndex + 1);
 }
 
-// Предыдущее фото
 function showPrevious() {
   showPhoto(currentIndex - 1);
 }
 
-// При загрузке страницы показываем первую фотку (если есть)
 document.addEventListener('DOMContentLoaded', () => {
   showPhoto(0);
 });
+

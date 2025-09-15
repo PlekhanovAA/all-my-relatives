@@ -1,49 +1,31 @@
-let editMode = false; // 🔥 по умолчанию режим просмотра
+let editMode = false;
 let selectionBox = null;
 let startX, startY;
 const photoCanvas = document.getElementById("photoCanvas");
 
-// 📌 показать модалку после выделения
-function openTagModal(filename, rect) {
-    // сохраняем текущий filename, чтобы потом использовать
-    window.currentFilename = filename;
-
-    // сохраняем координаты выделенной области (относительно контейнера)
+function openTagModal(photoId, rect) {
+    window.currentPhotoId = photoId;
     window.currentRect = rect;
-
     const modal = new bootstrap.Modal(document.getElementById("relativeTagModal"));
     modal.show();
 }
 
-// 📌 сохранить метку
 function saveTag() {
     const relativeSelect = document.getElementById("relativeSelect");
-    if (!relativeSelect) {
-        console.error("⚠️ Не найден select с родственниками!");
-        return;
-    }
+    if (!relativeSelect) return;
 
     const relativeId = relativeSelect.value;
-    const filename = window.currentFilename;
+    const photoId = window.currentPhotoId; // 👈 используем id, а не filename
     const rect = window.currentRect;
 
-    const tagDto = {
-        relativeId,
-        filename,
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height
-    };
-
-    const token = document.querySelector("meta[name='_csrf']").content;
-    const header = document.querySelector("meta[name='_csrf_header']").content;
+    const tagDto = { relativeId, photoId, ...rect };
 
     fetch("/gallery/tags/save", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            [header]: token
+            [document.querySelector("meta[name='_csrf_header']").content]:
+                document.querySelector("meta[name='_csrf']").content
         },
         body: JSON.stringify(tagDto)
     })
@@ -55,7 +37,6 @@ function saveTag() {
         .catch(err => console.error("Ошибка сохранения метки:", err));
 }
 
-// 📌 выделение области (если админ и editMode включён)
 if (document.body.getAttribute("data-is-admin") === "true" && photoCanvas) {
     photoCanvas.addEventListener("mousedown", (e) => {
         const mainPhoto = document.getElementById("mainPhoto");
@@ -84,9 +65,9 @@ if (document.body.getAttribute("data-is-admin") === "true" && photoCanvas) {
 
             const boxRect = selectionBox.getBoundingClientRect();
             const canvasRect = photoCanvas.getBoundingClientRect();
-            const filename = window.galleryData.photos[window.currentIndex];
+            const photoId = window.currentPhotoId;
 
-            openTagModal(filename, {
+            openTagModal(photoId, {
                 left: boxRect.left - canvasRect.left,
                 top: boxRect.top - canvasRect.top,
                 width: boxRect.width,
@@ -99,7 +80,6 @@ if (document.body.getAttribute("data-is-admin") === "true" && photoCanvas) {
     });
 }
 
-// 📌 переключатель режима редактирования
 document.addEventListener("DOMContentLoaded", () => {
     const toggleBtn = document.getElementById("toggleEditMode");
     if (toggleBtn) {
@@ -114,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 📌 отрисовка метки (для уже сохранённых)
 function renderTag(tag) {
     const box = document.createElement("div");
     box.classList.add("tag-box");
@@ -123,6 +102,30 @@ function renderTag(tag) {
     box.style.width = tag.width + "px";
     box.style.height = tag.height + "px";
     box.title = tag.relativeName;
+    photoCanvas.appendChild(box);
 
-    document.getElementById("photoCanvas").appendChild(box);
+    const list = document.getElementById("relativesList");
+    if (list) {
+        const li = document.createElement("li");
+        li.textContent = tag.relativeName;
+        list.appendChild(li);
+    }
+}
+
+function loadTags(photoId) {
+    if (!photoId) return;
+    console.log("➡️ loadTags: запрашиваю /gallery/tags/" + photoId);
+    fetch(`/gallery/tags/${photoId}`)
+        .then(res => {
+            if (!res.ok) throw new Error("Ошибка сети");
+            return res.json();
+        })
+        .then(tags => {
+            if (!Array.isArray(tags)) {
+                console.warn("Ответ не массив:", tags);
+                return;
+            }
+            tags.forEach(tag => renderTag(tag));
+        })
+        .catch(err => console.error("Ошибка загрузки тегов:", err));
 }

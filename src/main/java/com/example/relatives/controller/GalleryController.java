@@ -1,8 +1,11 @@
 package com.example.relatives.controller;
 
+import com.example.relatives.dto.PhotoDto;
+import com.example.relatives.model.Photo;
 import com.example.relatives.model.Relative;
 import com.example.relatives.model.Role;
 import com.example.relatives.model.User;
+import com.example.relatives.repository.PhotoRepository;
 import com.example.relatives.repository.RelativeRepository;
 import com.example.relatives.repository.UserRepository;
 import org.springframework.core.io.*;
@@ -25,42 +28,42 @@ public class GalleryController {
 
     private final UserRepository userRepository;
     private final RelativeRepository relativeRepository;
+    private final PhotoRepository photoRepository;
 
-    public GalleryController(UserRepository userRepository, RelativeRepository relativeRepository) {
+    public GalleryController(UserRepository userRepository,
+                             RelativeRepository relativeRepository,
+                             PhotoRepository photoRepository) {
         this.userRepository = userRepository;
         this.relativeRepository = relativeRepository;
+        this.photoRepository = photoRepository;
     }
 
     private Path getGalleryPath(User user) {
-        return Paths.get("uploads", user.getUsername(), "gallery");
-    }
-
-    private User resolveTargetUser(User current) {
-        return current.getRole() == Role.VIEWER ? current.getOwner() : current;
+        return Paths.get("uploads", user.getId().toString(), "gallery");
     }
 
     @GetMapping("/gallery")
     public String gallery(Model model,
-                          @AuthenticationPrincipal UserDetails userDetails) throws IOException {
-        User owner = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow();
+                          @AuthenticationPrincipal UserDetails userDetails) {
+        User current = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
+        User target = current.getRole() == Role.VIEWER ? current.getOwner() : current;
 
-        // фото
-        Path userGalleryPath = Paths.get("uploads", owner.getId().toString(), "gallery");
-        if (!Files.exists(userGalleryPath)) {
-            Files.createDirectories(userGalleryPath);
-        }
-        List<String> filenames = Files.list(userGalleryPath)
-                .map(Path::getFileName)
-                .map(Path::toString)
+        List<Photo> photos = photoRepository.findByOwner(target);
+
+        List<Map<String, Object>> photoDtos = photos.stream()
+                .map(p -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", p.getId());
+                    map.put("filename", p.getFilename());
+                    return map;
+                })
                 .toList();
 
-        // родственники владельца
-        List<Relative> relatives = relativeRepository.findByOwner(owner);
+        List<Relative> relatives = relativeRepository.findByOwner(target);
 
-        model.addAttribute("photos", filenames);
-        model.addAttribute("galleryOwner", owner.getId()); // 👈 остаётся
-        model.addAttribute("relatives", relatives);        // 👈 для модалки
+        model.addAttribute("photos", photoDtos);
+        model.addAttribute("galleryOwner", target.getId());
+        model.addAttribute("relatives", relatives);
 
         return "gallery";
     }
@@ -72,22 +75,20 @@ public class GalleryController {
         User current = userRepository.findByUsername(principal.getName()).orElseThrow();
         User target  = current.getRole() == Role.VIEWER ? current.getOwner() : current;
 
-        Path userGalleryPath = Paths.get("uploads", target.getUsername(), "gallery");
+        Path userGalleryPath = getGalleryPath(target);
         if (!Files.exists(userGalleryPath)) {
             Files.createDirectories(userGalleryPath);
         }
-        List<String> filenames = Files.list(userGalleryPath)
-                .map(Path::getFileName)
-                .map(Path::toString)
+
+        List<PhotoDto> photos = photoRepository.findByOwner(target).stream()
+                .map(p -> new PhotoDto(p.getId(), p.getFilename()))
                 .toList();
 
-        model.addAttribute("photos", filenames);
-        model.addAttribute("galleryOwner", target.getUsername()); // ⬅️ ВАЖНО
+        model.addAttribute("photos", photos);
+        model.addAttribute("galleryOwner", target.getId());
         return "gallery_grid";
     }
 
-
-    // --- Загрузка файлов (только ADMIN) ---
     @PostMapping("/gallery/upload")
     public String handleUpload(@RequestParam("images") List<MultipartFile> files,
                                Principal principal) throws IOException {
@@ -104,17 +105,25 @@ public class GalleryController {
 
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
-                String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+                String original = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+                String ext = original.contains(".") ? original.substring(original.lastIndexOf(".")) : "";
+                String filename = UUID.randomUUID() + ext;
+
                 Path targetPath = userGalleryPath.resolve(filename);
                 file.transferTo(targetPath);
+
+                // сохраняем запись в БД
+                Photo photo = new Photo();
+                photo.setOwner(current);
+                photo.setFilename(filename);
+                photoRepository.save(photo);
             }
         }
         return "redirect:/gallery/grid";
     }
 
-    // --- Удаление фото (только ADMIN) ---
     @PostMapping("/gallery/delete")
-    public String deleteImage(@RequestParam("filename") String filename,
+    public String deleteImage(@RequestParam("photoId") Long photoId,
                               Principal principal) throws IOException {
         User current = userRepository.findByUsername(principal.getName()).orElseThrow();
 
@@ -122,20 +131,24 @@ public class GalleryController {
             throw new SecurityException("Только администратор может удалять фото");
         }
 
-        Path filePath = getGalleryPath(current).resolve(filename);
+        Photo photo = photoRepository.findById(photoId).orElseThrow();
+        Path filePath = getGalleryPath(current).resolve(photo.getFilename());
         Files.deleteIfExists(filePath);
+
+        photoRepository.delete(photo);
 
         return "redirect:/gallery/grid";
     }
 
-    // --- Отдача файлов ---
-    @GetMapping("/uploads/{username}/gallery/{filename:.+}")
+    @GetMapping("/uploads/{userId}/gallery/{filename:.+}")
     @ResponseBody
-    public Resource serveImage(@PathVariable String username,
+    public Resource serveImage(@PathVariable Long userId,
                                @PathVariable String filename) throws IOException {
-        Path file = Paths.get("uploads", username, "gallery").resolve(filename);
+        Path file = Paths.get("uploads", userId.toString(), "gallery").resolve(filename);
         return new UrlResource(file.toUri());
     }
 }
+
+
 
 

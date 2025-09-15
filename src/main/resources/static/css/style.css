@@ -39,3 +39,9 @@ a:hover {
     color: white;
     border-color: #D9825B;
 }
+/* Подсветка рамки при наведении */
+.tag-box.highlight {
+    border: 2px solid #4A5C6A;
+    background: rgba(74, 92, 106, 0.25);
+    z-index: 10;
+}
