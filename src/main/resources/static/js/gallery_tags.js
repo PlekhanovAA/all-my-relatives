@@ -68,8 +68,8 @@ if (document.body.getAttribute("data-is-admin") === "true" && photoCanvas) {
             const photoId = window.currentPhotoId;
 
             openTagModal(photoId, {
-                left: boxRect.left - canvasRect.left,
-                top: boxRect.top - canvasRect.top,
+                x: boxRect.left - canvasRect.left,
+                y: boxRect.top - canvasRect.top,
                 width: boxRect.width,
                 height: boxRect.height
             });
