@@ -8,15 +8,16 @@ import com.example.relatives.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RelativeService {
 
-    private final RelativeRepository repo;
+    private final RelativeRepository relativeRepository;
     private final UserRepository userRepo;
 
-    public RelativeService(RelativeRepository repo, UserRepository userRepo) {
-        this.repo = repo;
+    public RelativeService(RelativeRepository relativeRepository, UserRepository userRepo) {
+        this.relativeRepository = relativeRepository;
         this.userRepo = userRepo;
     }
 
@@ -27,18 +28,18 @@ public class RelativeService {
 
         if (currentUser.getRole() == Role.ADMIN) {
             // Админ — видит только своих родственников
-            return repo.findByOwner(currentUser);
+            return relativeRepository.findByOwner(currentUser);
         } else {
             // VIEWER — видит родственников владельца (админа)
             if (currentUser.getOwner() == null) {
                 return List.of(); // нет владельца — пусто
             }
-            return repo.findByOwner(currentUser.getOwner());
+            return relativeRepository.findByOwner(currentUser.getOwner());
         }
     }
 
-    public Relative getById(Long id) {
-        return repo.findById(id)
+    public Relative getById(UUID id) {
+        return relativeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Родственник не найден"));
     }
 
@@ -47,7 +48,7 @@ public class RelativeService {
         User currentUser = userRepo.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         relative.setOwner(currentUser);
-        repo.save(relative);
+        relativeRepository.save(relative);
     }
 }
 

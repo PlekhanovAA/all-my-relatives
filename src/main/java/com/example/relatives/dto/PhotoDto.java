@@ -1,3 +1,5 @@
 package com.example.relatives.dto;
 
-public record PhotoDto(Long id, String filename) {}
+import java.util.UUID;
+
+public record PhotoDto(UUID id, String filename) {}

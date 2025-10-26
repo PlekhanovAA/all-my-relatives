@@ -2,6 +2,10 @@ package com.example.relatives.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.UUID;
 
 @Entity
 @Getter @Setter
@@ -9,9 +13,12 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Photo {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @JdbcTypeCode(SqlTypes.UUID)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "UUID")
+    private UUID id;
 
     private String filename;      // имя файла в папке
     private String originalName;  // оригинальное имя при загрузке

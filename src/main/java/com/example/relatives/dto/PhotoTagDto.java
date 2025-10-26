@@ -2,11 +2,13 @@ package com.example.relatives.dto;
 
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class PhotoTagDto {
-    private Long id;
-    private Long photoId;
-    private Long relativeId;
+    private UUID id;
+    private UUID photoId;
+    private UUID relativeId;
     private String relativeName;
 
     private int x;

@@ -7,13 +7,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Controller
 public class RelativeController {
 
-    private final RelativeService service;
+    private final RelativeService relativeService;
 
-    public RelativeController(RelativeService service) {
-        this.service = service;
+    public RelativeController(RelativeService relativeService) {
+        this.relativeService = relativeService;
     }
 
     @GetMapping("/")
@@ -23,7 +25,7 @@ public class RelativeController {
 
     @GetMapping("/relatives")
     public String list(Model model) {
-        model.addAttribute("relatives", service.getAll());
+        model.addAttribute("relatives", relativeService.getAll());
         return "relatives";
     }
 
@@ -35,15 +37,15 @@ public class RelativeController {
     }
 
     @GetMapping("/relative/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        model.addAttribute("relative", service.getById(id));
+    public String editForm(@PathVariable UUID id, Model model) {
+        model.addAttribute("relative", relativeService.getById(id));
         return "relative_form";
     }
 
     @PostMapping("/relative/save")
     @PreAuthorize("hasRole('ADMIN')")
     public String saveRelative(@ModelAttribute Relative relative) {
-        service.save(relative);
+        relativeService.save(relative);
         return "redirect:/relatives";
     }
 

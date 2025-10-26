@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/gallery/tags")
@@ -20,7 +21,7 @@ public class PhotoTagController {
     private final PhotoTagRepository tagRepo;
     private final PhotoRepository photoRepo;
     private final RelativeRepository relativeRepo;
-    private final UserRepository userRepo; // 👈 добавляем
+    private final UserRepository userRepo;
 
     public PhotoTagController(PhotoTagRepository tagRepo,
                               PhotoRepository photoRepo,
@@ -35,11 +36,10 @@ public class PhotoTagController {
     // 📌 Получение всех меток для фото
     @GetMapping("/{photoId}")
     public List<PhotoTagDto> getTags(@AuthenticationPrincipal UserDetails userDetails,
-                                     @PathVariable Long photoId) {
+                                     @PathVariable UUID photoId) {
         User current = userRepo.findByUsername(userDetails.getUsername()).orElseThrow();
         User target = current.getRole() == Role.VIEWER ? current.getOwner() : current;
 
-        // 🔥 Проверяем по ownerId, а не по equals
         Photo photo = photoRepo.findByIdAndOwnerId(photoId, target.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 

@@ -123,7 +123,7 @@ public class GalleryController {
     }
 
     @PostMapping("/gallery/delete")
-    public String deleteImage(@RequestParam("photoId") Long photoId,
+    public String deleteImage(@RequestParam("photoId") UUID photoId,
                               Principal principal) throws IOException {
         User current = userRepository.findByUsername(principal.getName()).orElseThrow();
 
@@ -142,7 +142,7 @@ public class GalleryController {
 
     @GetMapping("/uploads/{userId}/gallery/{filename:.+}")
     @ResponseBody
-    public Resource serveImage(@PathVariable Long userId,
+    public Resource serveImage(@PathVariable UUID userId,
                                @PathVariable String filename) throws IOException {
         Path file = Paths.get("uploads", userId.toString(), "gallery").resolve(filename);
         return new UrlResource(file.toUri());
