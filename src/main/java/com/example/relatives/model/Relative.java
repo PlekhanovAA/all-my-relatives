@@ -8,8 +8,8 @@ import org.hibernate.type.SqlTypes;
 import java.util.UUID;
 
 @Entity
-@Getter
-@Setter
+@Table(name = "relative")
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

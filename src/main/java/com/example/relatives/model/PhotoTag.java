@@ -9,6 +9,7 @@ import org.hibernate.type.SqlTypes;
 import java.util.UUID;
 
 @Entity
+@Table(name = "photo_tag")
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor

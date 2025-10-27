@@ -11,11 +11,10 @@ import java.util.UUID;
 
 
 @Entity
-@Setter @Getter
 @Table(name = "users")
+@Setter @Getter
 public class User {
 
-    // Getters / Setters
     @Id
     @GeneratedValue
     @JdbcTypeCode(SqlTypes.UUID)
