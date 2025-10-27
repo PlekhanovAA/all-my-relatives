@@ -114,17 +114,16 @@ function renderTag(tag) {
 
 function loadTags(photoId) {
     if (!photoId) return;
-    console.log("➡️ loadTags: запрашиваю /gallery/tags/" + photoId);
+
+    // 🧹 Очистка старых тегов и списка родственников
+    document.querySelectorAll(".tag-box").forEach(el => el.remove());
+    const relativesList = document.getElementById("relativesList");
+    if (relativesList) relativesList.innerHTML = "";
+
     fetch(`/gallery/tags/${photoId}`)
-        .then(res => {
-            if (!res.ok) throw new Error("Ошибка сети");
-            return res.json();
-        })
+        .then(res => res.json())
         .then(tags => {
-            if (!Array.isArray(tags)) {
-                console.warn("Ответ не массив:", tags);
-                return;
-            }
+            if (!Array.isArray(tags)) return;
             tags.forEach(tag => renderTag(tag));
         })
         .catch(err => console.error("Ошибка загрузки тегов:", err));
