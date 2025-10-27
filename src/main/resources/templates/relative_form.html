@@ -8,41 +8,69 @@
     <link th:href="@{/css/style.css}" rel="stylesheet" />
 </head>
 
-<body>
+<body style="background-color: #FAF6F0; color: #3B2F2F;">
 
 <div sec:authorize="isAuthenticated()"
      th:replace="~{fragments/navbar :: navbar}">
 </div>
 
-<div class="container mt-4">
-    <h2 th:text="${relative.id == null} ? #{relative.addTitle} : #{relative.editTitle}"></h2>
+<div class="container mt-4 mb-5">
+    <h2 th:text="${relative.id == null} ? #{relative.addTitle} : #{relative.editTitle}"
+        class="mb-4 fw-semibold"></h2>
 
-    <form th:action="@{/relative/save}" th:object="${relative}" method="post">
+    <form th:action="@{/relative/save}" th:object="${relative}" method="post"
+          class="p-4 rounded shadow-sm" style="background-color: #ffffff;">
         <input type="hidden" th:field="*{id}" />
 
-        <div class="mb-3">
-            <label class="form-label" th:text="#{relative.firstname}">Имя</label>
-            <input type="text" class="form-control" th:field="*{firstName}" />
+        <!-- 👪 Основная информация -->
+        <h5 class="border-bottom pb-2 mb-3" style="color: #4A5C6A;">Основная информация</h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" th:text="#{relative.firstname}">Имя</label>
+                <input type="text" class="form-control" th:field="*{firstName}" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label" th:text="#{relative.lastname}">Фамилия</label>
+                <input type="text" class="form-control" th:field="*{lastName}" />
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label" th:text="#{relative.lastname}">Фамилия</label>
-            <input type="text" class="form-control" th:field="*{lastName}" />
+        <!-- 📅 Даты -->
+        <h5 class="border-bottom pb-2 mt-4 mb-3" style="color: #4A5C6A;">Даты</h5>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label" th:text="#{relative.birthdate}">Дата рождения</label>
+                <input type="date" class="form-control form-control-sm" th:field="*{birthDate}" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" th:text="#{relative.deathdate}">Дата смерти</label>
+                <input type="date" class="form-control form-control-sm" th:field="*{deathDate}" />
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label" th:text="#{relative.birthdate}">Дата рождения</label>
-            <input type="text" class="form-control" th:field="*{birthDate}" />
+        <!-- 📍 Местоположение -->
+        <h5 class="border-bottom pb-2 mt-4 mb-3" style="color: #4A5C6A;">Местоположение</h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" th:text="#{relative.currentlocation}">Текущее местоположение</label>
+                <select class="form-select" th:field="*{currentLocation}">
+                    <option th:text="#{relative.selectLocation}" value="">Выберите местоположение</option>
+                    <option th:each="loc : ${locations}"
+                            th:value="${loc.id}"
+                            th:text="${loc.name}"></option>
+                </select>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label" th:text="#{relative.location}">Местоположение</label>
-            <input type="text" class="form-control" th:field="*{location}" />
+        <!-- 🔘 Кнопки -->
+        <div class="mt-4">
+            <button type="submit" class="btn"
+                    style="background-color: #7C8B60; color: white;"
+                    th:text="#{relative.save}">Сохранить</button>
+            <a href="/relatives" class="btn btn-secondary ms-2"
+               th:text="#{relative.cancel}">Отмена</a>
         </div>
-
-        <button type="submit" class="btn" style="background-color: #7C8B60; color: white;"
-                th:text="#{relative.save}">Сохранить</button>
-        <a href="/relatives" class="btn btn-secondary" th:text="#{relative.cancel}">Отмена</a>
     </form>
 </div>
 
