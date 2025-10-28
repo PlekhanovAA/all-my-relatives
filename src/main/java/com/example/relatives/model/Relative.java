@@ -41,28 +41,28 @@ public class Relative {
 
     private String photoUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "birth_place_id")
     private Location birthPlace;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "death_place_id")
     private Location deathPlace;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_location_id")
     private Location currentLocation;
 
     // 👇 Родственные связи
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "father_id")
     private Relative father;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mother_id")
     private Relative mother;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "spouse_id")
     private Relative spouse;
 
@@ -72,7 +72,7 @@ public class Relative {
     @OneToMany(mappedBy = "mother", cascade = CascadeType.ALL)
     private List<Relative> childrenFromMother = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
 
