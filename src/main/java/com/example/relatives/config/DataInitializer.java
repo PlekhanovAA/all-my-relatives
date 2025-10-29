@@ -53,8 +53,31 @@ public class DataInitializer {
             Location astana = locations.get(1);
             Location moscow = locations.get(2);
 
-            // === Пример родственников для древа ===
             if (relativeRepository.count() == 0) {
+
+                // ===== ПОКОЛЕНИЕ 1 — дедушки и бабушки =====
+                Relative grandfather = new Relative();
+                grandfather.setFirstName("Николай");
+                grandfather.setLastName("Плеханов");
+                grandfather.setGender("MALE");
+                grandfather.setBirthDate("1935-04-10");
+                grandfather.setOccupation("Строитель");
+                grandfather.setCurrentLocation(moscow);
+                grandfather.setOwner(admin);
+
+                Relative grandmother = new Relative();
+                grandmother.setFirstName("Анна");
+                grandmother.setLastName("Плеханова");
+                grandmother.setGender("FEMALE");
+                grandmother.setBirthDate("1938-07-22");
+                grandmother.setOccupation("Медсестра");
+                grandmother.setCurrentLocation(moscow);
+                grandmother.setOwner(admin);
+
+                grandfather.setSpouse(grandmother);
+                grandmother.setSpouse(grandfather);
+
+                // ===== ПОКОЛЕНИЕ 2 — родители =====
                 Relative father = new Relative();
                 father.setFirstName("Александр");
                 father.setLastName("Плеханов");
@@ -62,6 +85,8 @@ public class DataInitializer {
                 father.setBirthDate("1960-05-12");
                 father.setOccupation("Инженер");
                 father.setCurrentLocation(moscow);
+                father.setFather(grandfather);
+                father.setMother(grandmother);
                 father.setOwner(admin);
 
                 Relative mother = new Relative();
@@ -73,6 +98,10 @@ public class DataInitializer {
                 mother.setCurrentLocation(moscow);
                 mother.setOwner(admin);
 
+                father.setSpouse(mother);
+                mother.setSpouse(father);
+
+                // ===== ПОКОЛЕНИЕ 3 — дети =====
                 Relative child1 = new Relative();
                 child1.setFirstName("Алексей");
                 child1.setLastName("Плеханов");
@@ -95,13 +124,26 @@ public class DataInitializer {
                 child2.setMother(mother);
                 child2.setOwner(admin);
 
-                // связи супругов
-                father.setSpouse(mother);
-                mother.setSpouse(father);
+                // ===== ПОКОЛЕНИЕ 4 — внуки =====
+                Relative grandchild = new Relative();
+                grandchild.setFirstName("Иван");
+                grandchild.setLastName("Плеханов");
+                grandchild.setGender("MALE");
+                grandchild.setBirthDate("2022-06-01");
+                grandchild.setOccupation("Малыш :)");
+                grandchild.setCurrentLocation(almaty);
+                grandchild.setFather(child1);
+                grandchild.setOwner(admin);
 
-                relativeRepository.saveAll(List.of(father, mother, child1, child2));
-                System.out.println("✅ Добавлены тестовые родственники для древа");
+                relativeRepository.saveAll(List.of(
+                        grandfather, grandmother,
+                        father, mother,
+                        child1, child2,
+                        grandchild
+                ));
+                System.out.println("✅ Добавлены тестовые родственники для сложного древа");
             }
+
         };
     }
 }

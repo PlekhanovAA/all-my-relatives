@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/cytoscape@3.24.0/dist/cytoscape.min.js"></script>
     <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
     <script src="https://unpkg.com/cytoscape-dagre@2.3.2/cytoscape-dagre.js"></script>
+    <script th:src="@{/js/tree_vis.js}"></script>
 
     <style>
         body { background: #FAF6F0; color: #3B2F2F; font-family: "Segoe UI", sans-serif; }
@@ -34,182 +35,117 @@
     </div>
 </div>
 
-<script>
-    // регистрируем расширение
-    cytoscape.use( cytoscapeDagre );
+<script type="module">
+    import { Network } from "https://cdn.jsdelivr.net/npm/vis-network/standalone/esm/vis-network.min.js";
 
-    async function buildFamily() {
-      const container = document.getElementById('cy');
+    document.addEventListener("DOMContentLoaded", async () => {
+      const container = document.getElementById("cy");
+      container.style.height = "90vh";
+      container.style.border = "2px solid #D9825B";
+      container.style.borderRadius = "12px";
+      container.style.backgroundColor = "#FAF6F0";
 
-      // загрузка данных с бэкенда
-      const res = await fetch('/api/tree');
-      if (!res.ok) {
-        container.innerHTML = "<div class='text-center text-danger p-3'>Ошибка загрузки /api/tree</div>";
-        console.error("API error", res.status);
+      const response = await fetch("/api/tree");
+      if (!response.ok) {
+        container.innerHTML = "<div class='p-3 text-danger'>Ошибка загрузки /api/tree</div>";
         return;
       }
-      const data = await res.json();
-      console.log("Исходные данные:", data);
 
-      // индекс по id
-      const byId = Object.fromEntries(data.map(p => [p.id, p]));
+      const people = await response.json();
+      const byId = Object.fromEntries(people.map(p => [p.id, p]));
 
-      // подготовка элементов cytoscape
-      const elements = [];
+      // безопасный парсинг даты
+      const ts = d => {
+        const t = new Date(d).getTime();
+        return isNaN(t) ? Infinity : t;
+      };
 
-      // узлы
-      data.forEach(p => {
-        const name = `${p.firstName || ''} ${p.lastName || ''}`.trim();
-        const birth = p.birthDate || '';
-        // label: две строки — имя и дата (используем \n)
-        const label = birth ? `${name}\n${birth}` : name;
+      // --- узлы ---
+      const nodes = people.map(p => ({
+        id: p.id,
+        label: `${p.firstName || ""} ${p.lastName || ""}\n${p.birthDate || ""}`,
+        color: {
+          background: p.gender === "FEMALE" ? "#F8DAD1" : "#E1E9D2",
+          border: p.gender === "FEMALE" ? "#D9825B" : "#7C8B60"
+        },
+        font: { color: "#3B2F2F", size: 14 },
+        shape: "box",
+        margin: 10,
+        borderWidth: 2,
+        birthTs: ts(p.birthDate)
+      }));
 
-        elements.push({
-          data: { id: p.id, label, firstName: p.firstName, lastName: p.lastName, birth: p.birthDate, gender: p.gender }
+      // --- связи ---
+      const edges = [];
+      for (const p of people) {
+        if (p.fatherId && byId[p.fatherId]) edges.push({ from: p.fatherId, to: p.id });
+        if (p.motherId && byId[p.motherId]) edges.push({ from: p.motherId, to: p.id });
+        if (p.spouseId && byId[p.spouseId]) {
+          const a = p.id, b = p.spouseId;
+          if (!edges.some(e => (e.from === a && e.to === b) || (e.from === b && e.to === a)))
+            edges.push({ from: a, to: b, dashes: [4, 4], color: "#4A5C6A" });
+        }
+      }
+
+      // --- определяем поколения по датам ---
+      // группируем людей по десятилетиям рождения, чтобы старшие были выше
+      const groups = {};
+      for (const p of people) {
+        const year = new Date(p.birthDate).getFullYear();
+        const bucket = isNaN(year) ? 9999 : Math.floor(year / 10) * 10;
+        if (!groups[bucket]) groups[bucket] = [];
+        groups[bucket].push(p);
+      }
+
+      // сортируем группы по возрастанию возраста (меньше год — ниже)
+      const sortedBuckets = Object.keys(groups)
+        .map(y => parseInt(y))
+        .sort((a, b) => a - b); // старшие (меньше год) будут раньше — выше
+
+      const coords = new Map();
+      const genStepY = 300; // расстояние между поколениями
+      const stepX = 280;    // горизонтальное расстояние между людьми
+
+      sortedBuckets.forEach((bucket, lvl) => {
+        const group = groups[bucket];
+        group.sort((a, b) => ts(a.birthDate) - ts(b.birthDate));
+        const total = group.length;
+        const startX = -((total - 1) * stepX) / 2;
+
+        group.forEach((p, i) => {
+          const x = startX + i * stepX;
+          const y = lvl * genStepY;
+          coords.set(p.id, { x, y });
         });
       });
 
-      // ребра: отец->ребенок и мать->ребенок
-      data.forEach(p => {
-        if (p.fatherId && byId[p.fatherId]) {
-          elements.push({ data: { id: `e_f_${p.fatherId}_${p.id}`, source: p.fatherId, target: p.id, relation: 'father' }});
+      // --- супруги рядом ---
+      for (const p of people) {
+        if (p.spouseId && coords.has(p.id) && coords.has(p.spouseId)) {
+          const a = coords.get(p.id), b = coords.get(p.spouseId);
+          const mid = (a.x + b.x) / 2;
+          const offset = 160; // увеличенное расстояние между супругами
+          coords.set(p.id, { x: mid - offset, y: a.y });
+          coords.set(p.spouseId, { x: mid + offset, y: b.y });
         }
-        if (p.motherId && byId[p.motherId]) {
-          elements.push({ data: { id: `e_m_${p.motherId}_${p.id}`, source: p.motherId, target: p.id, relation: 'mother' }});
-        }
-        // spouse link (undirected visual link) — add single edge between spouses
-        if (p.spouseId && byId[p.spouseId]) {
-          // add only once: ensure id smaller-first to avoid duplicates
-          const a = p.id, b = p.spouseId;
-          const edgeId = a < b ? `e_s_${a}_${b}` : `e_s_${b}_${a}`;
-          if (!elements.some(el => el.data && el.data.id === edgeId)) {
-            elements.push({ data: { id: edgeId, source: a, target: b, relation: 'spouse' }});
-          }
-        }
+      }
+
+      // --- создаём сеть ---
+      const network = new Network(container, { nodes, edges }, {
+        physics: false,
+        edges: { smooth: { type: "cubicBezier" }, color: "#7C8B60" },
+        interaction: { hover: true, zoomView: true, dragView: true }
       });
 
-      // init cy
-      const cy = cytoscape({
-        container: container,
-        elements: elements,
-        style: [
-          {
-            selector: 'node',
-            style: {
-              'label': 'data(label)',
-              'text-wrap': 'wrap',
-              'text-valign': 'center',
-              'text-halign': 'center',
-              'font-size': 12,
-              'background-color': '#fff',
-              'border-width': 2,
-              'border-color': '#7C8B60',
-              'width': '160px',
-              'height': '60px',
-              'shape': 'roundrectangle',
-              'padding': '6px',
-              'text-margin-y': 0,
-              'color': '#3B2F2F',
-              'text-wrap': 'wrap'
-            }
-          },
-          {
-            selector: 'node[gender = "MALE"]',
-            style: {
-              'border-color': '#7C8B60'
-            }
-          },
-          {
-            selector: 'node[gender = "FEMALE"]',
-            style: {
-              'border-color': '#D9825B'
-            }
-          },
-          {
-            selector: 'edge[relation = "father"]',
-            style: {
-              'curve-style':'bezier',
-              'line-color': '#7C8B60',
-              'target-arrow-shape': 'none',
-              'width': 2
-            }
-          },
-          {
-            selector: 'edge[relation = "mother"]',
-            style: {
-              'curve-style':'bezier',
-              'line-style': 'dashed',
-              'line-color': '#7C8B60',
-              'target-arrow-shape': 'none',
-              'width': 2
-            }
-          },
-          {
-            selector: 'edge[relation = "spouse"]',
-            style: {
-              'curve-style': 'straight',
-              'line-style': 'dotted',
-              'line-color': '#4A5C6A',
-              'width': 2,
-              'target-arrow-shape': 'none'
-            }
-          },
-          {
-            selector: '.highlighted',
-            style: {
-              'background-color': '#ffeb99',
-              'border-color': '#D9825B',
-              'transition-property': 'border-color, background-color',
-              'transition-duration': '0.2s'
-            }
-          }
-        ],
-        layout: {
-          name: 'dagre',
-          rankDir: 'TB',   // TB = top->bottom
-          nodeSep: 50,
-          edgeSep: 10,
-          rankSep: 100,
-          rankDir: 'TB'
-        },
-        userZoomingEnabled: true,
-        boxSelectionEnabled: false,
-        autoungrabify: false
+      // --- позиционирование после отрисовки ---
+      network.once("afterDrawing", () => {
+        coords.forEach((pos, id) => network.moveNode(id, pos.x, pos.y));
+        network.fit({ animation: true, padding: 150 });
       });
-
-      // set gender data attributes so selectors 'node[gender=..]' work
-      data.forEach(p => {
-        const n = cy.getElementById(p.id);
-        if (n) n.data('gender', p.gender);
-      });
-
-      // center & fit
-      cy.fit(40);
-
-      // click handler
-      cy.on('tap', 'node', function(evt){
-        const n = evt.target;
-        const info = `${n.data('label')}\nПол: ${n.data('gender') || '—'}`;
-        alert(info);
-      });
-
-      // tooltip / hover highlight for children / parents
-      cy.on('mouseover', 'node', function(evt){
-        const n = evt.target;
-        n.addClass('highlighted');
-      });
-      cy.on('mouseout', 'node', function(evt){
-        const n = evt.target;
-        n.removeClass('highlighted');
-      });
-
-    } // buildFamily
-
-    buildFamily().catch(err => {
-      console.error(err);
-      document.getElementById('cy').innerHTML = "<div class='p-3 text-danger'>Ошибка: " + err.message + "</div>";
     });
 </script>
+
+
 
 </body>
 </html>
