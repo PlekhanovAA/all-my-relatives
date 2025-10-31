@@ -22,7 +22,7 @@ public class SecurityConfig {
                         // Общедоступные страницы
                         .requestMatchers("/gallery/tags/**").hasAnyRole("ADMIN", "VIEWER")
                         .requestMatchers("/", "/login", "/register", "/change-lang", "/error").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/img/**", "/uploads/**").permitAll()
                         // Остальные страницы требуют авторизации
                         .anyRequest().authenticated()
                 )
