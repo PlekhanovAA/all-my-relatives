@@ -11,9 +11,9 @@ public class PhotoTagDto {
     private UUID relativeId;
     private String relativeName;
 
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    private double x;
+    private double y;
+    private double width;
+    private double height;
 }
 

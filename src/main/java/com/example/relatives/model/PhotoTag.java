@@ -30,8 +30,8 @@ public class PhotoTag {
     @JoinColumn(name = "relative_id")
     private Relative relative;
 
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    private double x;
+    private double y;
+    private double width;
+    private double height;
 }

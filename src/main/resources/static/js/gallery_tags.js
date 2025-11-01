@@ -1,3 +1,16 @@
+function getImageMetrics() {
+    const img = document.getElementById("mainPhoto");
+    const rect = img.getBoundingClientRect();
+
+    return {
+        displayWidth: rect.width,
+        displayHeight: rect.height,
+        offsetLeft: rect.left,
+        offsetTop: rect.top
+    };
+}
+
+
 // ========== ИНИЦИАЛИЗАЦИЯ ==========
 const photoCanvas = document.getElementById("photoCanvas");
 let editMode = false;
@@ -64,22 +77,26 @@ window.saveTag = saveTag;
 
 // ========== РЕНДЕР ТЕГА ==========
 function renderTag(tag) {
+    const img = document.getElementById("mainPhoto");
+    const imgRect = img.getBoundingClientRect();
+
+    // координаты в px относительно картинки
+    const x = tag.x * imgRect.width;
+    const y = tag.y * imgRect.height;
+    const w = tag.width * imgRect.width;
+    const h = tag.height * imgRect.height;
+
     const box = document.createElement("div");
     box.classList.add("tag-box");
-    box.style.left = tag.x + "px";
-    box.style.top = tag.y + "px";
-    box.style.width = tag.width + "px";
-    box.style.height = tag.height + "px";
+    box.style.position = "absolute"; // чтобы позиционировалось относительно photoCanvas
+    box.style.left = `${x}px`;
+    box.style.top = `${y}px`;
+    box.style.width = `${w}px`;
+    box.style.height = `${h}px`;
     box.title = tag.relativeName;
     box.style.display = tagsVisible ? "block" : "none";
-    photoCanvas.appendChild(box);
 
-    const list = document.getElementById("relativesList");
-    if (list) {
-        const li = document.createElement("li");
-        li.textContent = tag.relativeName;
-        list.appendChild(li);
-    }
+    photoCanvas.appendChild(box);
 }
 
 // ========== ЗАГРУЗКА ТЕГОВ ==========
@@ -198,12 +215,22 @@ if (document.body.getAttribute("data-is-admin") === "true" && photoCanvas) {
             const boxRect = selectionBox.getBoundingClientRect();
             const canvasRect = photoCanvas.getBoundingClientRect();
 
+            const img = document.getElementById("mainPhoto");
+            const imgRect = img.getBoundingClientRect();
+
+            const xPx = parseFloat(selectionBox.style.left);
+            const yPx = parseFloat(selectionBox.style.top);
+            const wPx = parseFloat(selectionBox.style.width);
+            const hPx = parseFloat(selectionBox.style.height);
+
+            // ✅ переводим в доли
             openTagModal(window.currentPhotoId, {
-                x: parseInt(selectionBox.style.left),
-                y: parseInt(selectionBox.style.top),
-                width: parseInt(selectionBox.style.width),
-                height: parseInt(selectionBox.style.height)
+                x: xPx / imgRect.width,
+                y: yPx / imgRect.height,
+                width: wPx / imgRect.width,
+                height: hPx / imgRect.height
             });
+
         }
 
         document.addEventListener("mousemove", onMouseMove);
@@ -222,4 +249,18 @@ window.cancelTagSelection = cancelTagSelection;
 
 if (!tagsVisible) {
     window.toggleTagVisibility(); // показать существующие
+}
+
+function enableTagDrawing() {
+    if (!photoCanvas) return;
+    // тут уже есть обработчик mouse down на photoCanvas, оставляем его активным
+    // если нужно, можно добавить подсветку курсора
+    photoCanvas.style.cursor = 'crosshair';
+}
+
+function disableTagDrawing() {
+    if (!photoCanvas) return;
+    // убираем визуальные эффекты и текущую рамку
+    photoCanvas.style.cursor = 'default';
+    cancelTagSelection();
 }
