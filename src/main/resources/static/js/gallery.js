@@ -1,6 +1,9 @@
 // gallery.js
 
-const photoList = Array.isArray(window.galleryData?.photos) ? window.galleryData.photos : [];
+const photoList = Array.isArray(window.galleryData?.photos)
+  ? window.galleryData.photos
+  : [];
+
 const photoUrls = photoList.map(p => ({
   id: p.id,
   url: `/uploads/${encodeURIComponent(window.galleryData.galleryOwner)}/gallery/${encodeURIComponent(p.filename)}`
@@ -26,14 +29,12 @@ function showPhoto(index) {
   }
 
   currentIndex = (index + photoList.length) % photoList.length;
-
   const photo = photoList[currentIndex];
   const url = `/uploads/${encodeURIComponent(window.galleryData.galleryOwner)}/gallery/${encodeURIComponent(photo.filename)}`;
 
   mainPhoto.src = url;
   mainPhoto.alt = photo.filename;
-
-  window.currentPhotoId = photo.id; // 👈 теперь сохраняем id
+  window.currentPhotoId = photo.id; // 👈 сохраняем id
 
   if (typeof window.loadTags === 'function') {
     window.loadTags(photo.id); // 👈 грузим теги по id
@@ -52,3 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
   showPhoto(0);
 });
 
+const toggleBtn = document.getElementById("toggleTagsBtn");
+if (toggleBtn) {
+  toggleBtn.onclick = () => {
+    if (typeof window.toggleTagVisibility === "function") {
+      window.toggleTagVisibility();
+    }
+  };
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+});

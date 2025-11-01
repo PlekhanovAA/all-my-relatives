@@ -148,7 +148,7 @@ a.register-link {
                 <div class="text-end mt-3">
                     <a class="register-link" th:href="@{/register}" th:text="#{login.registerLink}">Регистрация</a>
                 </div>
-
+                <br>
                 <div th:if="${param.error}" class="alert alert-danger" th:text="#{login.error}"></div>
                 <div th:if="${param.logout}" class="alert alert-success" th:text="#{login.logout}"></div>
             </div>

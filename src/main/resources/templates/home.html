@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title>Главная</title>
+
+    <link th:href="@{/css/home.css}" rel="stylesheet">
+</head>
+<div th:replace="~{fragments/header :: header}"></div>
+<body>
+
+<!--<header class="amr-header">-->
+<!--    <div class="container text-center py-4">-->
+<!--        <a href="/home" class="amr-title">ALL MY RELATIVES</a>-->
+<!--    </div>-->
+<!--</header>-->
+
+<div class="home-wrapper">
+    <div class="home-card">
+
+        <a href="/relatives" class="home-btn">Мои родственники</a>
+        <a href="/gallery" class="home-btn">Фотоальбом</a>
+        <a href="/tree" class="home-btn">Древо</a>
+        <a href="/profile" class="home-btn">Профиль</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-exit">Выход</button>
+        </form>
+
+    </div>
+</div>
+
+
+</body>
+</html>

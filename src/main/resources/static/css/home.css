@@ -1,0 +1,110 @@
+body {
+    background: #3C2C3C;
+    color: #272121;
+    margin: 0;
+    font-family: "Inter", sans-serif;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* не центрируем body! */
+    min-height: 100vh;
+}
+
+/* Header */
+.amr-header {
+    width: 100%;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.amr-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-decoration: none;
+    color: #D7C3BA;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.amr-title:hover {
+    color: #A9BBD4;
+}
+
+/* Центрирующий контейнер */
+.home-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1; /* чтобы занимал пространство под хедером */
+    width: 100%;
+}
+
+/* "Карточка" как логин */
+.home-card {
+    background-color: rgba(255,255,255,0.2);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 2px;
+    padding: 2rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 500px;
+}
+
+/* Заголовок */
+.home-title {
+    text-align: center;
+    font-weight: 600;
+    color: #D7C3BA;
+    margin-bottom: 1rem;
+}
+
+/* Кнопки меню */
+.home-btn {
+    text-decoration: none;
+    text-align: center;
+    background-color: #D7C3BA;
+    color: #272121;
+    border: none;
+    padding: 1rem;
+    font-weight: 600;
+    border-radius: 2px;
+    transition: 0.2s;
+}
+
+.home-btn:hover {
+    background-color: #A9BBD4;
+}
+
+/* Новый стиль для выхода (бывший обычный) */
+.logout-btn {
+    margin-top: 10px; /* отделяем от остальных */
+    background-color: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #FFFFFF;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255,255,255,0.3);
+    color: #272121;
+}
+
+.btn-exit {
+    background-color: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.35);
+    width: 100%;
+    padding: .75rem;
+    font-weight: 700;
+    border-radius: 4px;
+    color: #FFFFFF;
+    margin-top: 1.3rem; /* увеличили расстояние */
+}
+
+.btn-exit:hover {
+    background-color: rgba(255,255,255,0.25);
+}
+

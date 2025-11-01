@@ -24,10 +24,10 @@ public class RelativeController {
         this.locationRepository = locationRepository;
     }
 
-    @GetMapping("/")
-    public String homeRedirect() {
-        return "redirect:/relatives";
-    }
+//    @GetMapping("/")
+//    public String homeRedirect() {
+//        return "redirect:/relatives";
+//    }
 
     @GetMapping("/relatives")
     public String list(Model model) {
