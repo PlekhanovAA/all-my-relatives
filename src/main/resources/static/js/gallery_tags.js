@@ -108,12 +108,28 @@ function loadTags(photoId) {
     if (list) list.innerHTML = "";
 
     fetch(`/gallery/tags/${photoId}`)
-        .then(res => res.json())
+        .then(async res => {
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("Ошибка HTTP:", res.status, text);
+                throw new Error("Сервер вернул ошибку");
+            }
+
+            const contentType = res.headers.get("Content-Type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await res.text();
+                console.error("Ожидался JSON, но пришло:", text);
+                throw new Error("Неверный формат ответа (ожидался JSON)");
+            }
+
+            return res.json();
+        })
         .then(tags => {
             if (!Array.isArray(tags)) return;
             tags.forEach(t => renderTag(t));
         })
         .catch(err => console.error("Ошибка загрузки тегов:", err));
+
 }
 window.loadTags = loadTags;
 
